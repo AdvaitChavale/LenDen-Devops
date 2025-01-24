@@ -72,8 +72,8 @@ The project uses Docker Compose to manage the multi-container setup, ensuring se
 1. Clone the repository:
 
    ```bash
-   git clone <repository-url>
-   cd <repository-directory>
+   git clone https://github.com/AdvaitChavale/LenDen-Devops
+   cd LenDen Devops
    ```
 
 2. Build and start the containers:
