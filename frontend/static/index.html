@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Todo List</title>
+    <!-- Favicon for Browser -->
+    <link rel="icon" href="https://png.pngtree.com/png-vector/20210605/ourmid/pngtree-task-done-notepad-checklist-complete-tasks-to-do-list-icon-isolated-png-image_3421130.jpg" >
+    <style>
+        /* Importing Comfortaa font */
+        @import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@700&display=swap');
+
+        /* Global Styles */
+        body {
+            font-family: 'Comfortaa', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            margin: 0;
+            min-height: 100vh;
+            background-color: #ffdbac;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Navigation Bar */
+        nav {
+            width: 100%;
+            background-color: #007bff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+        }
+
+        nav .nav-title {
+            color: white;
+            font-size: 1.2rem;
+            padding-left: 10px; /* Added spacing from the left edge */
+        }
+
+        nav .nav-download {
+            padding: 5px 10px;
+            background-color: white;
+            color: #007bff;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-right: 10px; /* Added spacing from the right edge */
+        }
+
+        nav .nav-download:hover {
+            background-color: #e6e6e6;
+        }
+
+        /* Form Container */
+        .form-container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 80px; /* Account for fixed navbar */
+            width: 90%; /* Responsive width */
+            max-width: 400px;
+        }
+
+        .form-container input[type="text"],
+        .form-container input[type="date"] {
+            width: 100%; /* Full width for responsiveness */
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-container .time-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            width: 100%; /* Full width for responsiveness */
+        }
+
+        .form-container .time-container input[type="text"] {
+            width: 70%; /* Adjust width */
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-container .time-container select {
+            width: 30%; /* Adjust width */
+            padding: 10px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .form-container button {
+            margin-top: 10px;
+        }
+
+        /* Todo List */
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        li button {
+            padding: 5px 10px;
+            background-color: #dc3545;
+            font-size: 0.8rem;
+        }
+
+        li button:hover {
+            background-color: #a71d2a;
+        }
+
+        /* Footer */
+        footer {
+            width: 100%;
+            text-align: center;
+            background-color: #007bff;
+            color: white;
+            padding: 10px 0;
+            font-size: 0.9rem;
+            position: fixed;
+            bottom: 0;
+        }
+
+        /* Responsive Media Queries */
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 15px;
+            }
+
+            .form-container {
+                margin-top: 100px; /* Adjust for navbar height */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav>
+        <div class="nav-title">Advait Chavale Resume</div>
+        <button class="nav-download" onclick="downloadResume()">Download Resume</button>
+    </nav>
+
+    <!-- Form Container -->
+    <div class="form-container">
+        <h1>Todo List</h1>
+        <input type="text" id="newItem" placeholder="Enter a new item">
+        <input type="date" id="newDate" placeholder="Enter date">
+        <div class="time-container">
+            <input type="text" id="newTime" placeholder="Enter time (e.g., 4)">
+            <select id="amPm">
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+            </select>
+        </div>
+        <button onclick="addItem()">Add</button>
+        <ul id="todoList"></ul>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        Created by Advait Chavale for LenDen Club
+    </footer>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        async function fetchTodos() {
+            const response = await fetch(`${API_URL}/todos`);
+            const todos = await response.json();
+            const list = document.getElementById('todoList');
+            list.innerHTML = '';
+            todos.forEach(todo => {
+                const li = document.createElement('li');
+                li.textContent = todo.content;
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => deleteItem(todo._id);
+                li.appendChild(deleteBtn);
+                list.appendChild(li);
+            });
+        }
+
+        async function addItem() {
+            const input = document.getElementById('newItem');
+            if (input.value.trim() !== '') {
+                const response = await fetch(`${API_URL}/todos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ content: input.value }),
+                });
+                if (response.ok) {
+                    input.value = '';
+                    fetchTodos();
+                }
+            }
+        }
+
+        async function deleteItem(id) {
+            const response = await fetch(`${API_URL}/todos/${id}`, {
+                method: 'DELETE',
+            });
+            if (response.ok) {
+                fetchTodos();
+            }
+        }
+
+        function downloadResume() {
+            const a = document.createElement('a');
+            a.href = 'https://drive.google.com/file/d/1FuPxCuwLZ0_nAZ1ti9WnPKrSTCRWNFE2/view?usp=sharing'; 
+            a.download = 'Advait_Chavale_Resume.pdf';
+            a.click();
+        }
+
+        fetchTodos();
+    </script>
+</body>
+</html>
